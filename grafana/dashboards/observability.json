@@ -1,0 +1,14 @@
+{
+  "id": null, "uid": "experiment-08", "title": "实验 8 服务可观测性", "schemaVersion": 41,
+  "time": {"from":"now-15m","to":"now"}, "refresh":"5s", "tags":["classroom","self-designed"],
+  "templating":{"list":[{"name":"job","type":"query","datasource":{"type":"prometheus","uid":"prometheus"},"query":"label_values(up, job)","current":{"text":"demo-app","value":"demo-app"}}]},
+  "panels":[
+    {"id":1,"type":"stat","title":"服务状态","gridPos":{"x":0,"y":0,"w":4,"h":5},"datasource":{"type":"prometheus","uid":"prometheus"},"targets":[{"expr":"up{job=\"$job\"}","legendFormat":"{{instance}}"}],"fieldConfig":{"defaults":{"unit":"short","noValue":"无数据","thresholds":{"steps":[{"color":"red","value":null},{"color":"green","value":1}]}}}},
+    {"id":2,"type":"timeseries","title":"请求速率","gridPos":{"x":4,"y":0,"w":10,"h":8},"datasource":{"type":"prometheus","uid":"prometheus"},"targets":[{"expr":"sum by (method, route) (rate(http_requests_total{job=\"$job\"}[1m]))","legendFormat":"{{method}} {{route}}"}],"fieldConfig":{"defaults":{"unit":"reqps","noValue":"无数据"}}},
+    {"id":3,"type":"timeseries","title":"状态码和错误率","gridPos":{"x":14,"y":0,"w":10,"h":8},"datasource":{"type":"prometheus","uid":"prometheus"},"targets":[{"expr":"sum by (status) (rate(http_requests_total{job=\"$job\"}[5m]))","legendFormat":"HTTP {{status}}"},{"expr":"sum(rate(http_requests_total{job=\"$job\",status=~\"5..\"}[5m])) / clamp_min(sum(rate(http_requests_total{job=\"$job\"}[5m])),0.001)","legendFormat":"错误率"}],"fieldConfig":{"defaults":{"noValue":"无数据"}}},
+    {"id":4,"type":"timeseries","title":"请求延迟 p50 p95","gridPos":{"x":0,"y":8,"w":12,"h":8},"datasource":{"type":"prometheus","uid":"prometheus"},"targets":[{"expr":"histogram_quantile(0.50, sum by (le) (rate(http_request_duration_seconds_bucket{job=\"$job\"}[5m])))","legendFormat":"p50"},{"expr":"histogram_quantile(0.95, sum by (le) (rate(http_request_duration_seconds_bucket{job=\"$job\"}[5m])))","legendFormat":"p95"}],"fieldConfig":{"defaults":{"unit":"s","noValue":"无数据","thresholds":{"steps":[{"color":"green","value":null},{"color":"red","value":0.5}]}}}},
+    {"id":5,"type":"timeseries","title":"进程 CPU","gridPos":{"x":12,"y":8,"w":6,"h":8},"datasource":{"type":"prometheus","uid":"prometheus"},"targets":[{"expr":"rate(demo_process_cpu_seconds_total{job=\"$job\"}[1m])","legendFormat":"CPU cores"}],"fieldConfig":{"defaults":{"unit":"cores","noValue":"无数据"}}},
+    {"id":6,"type":"timeseries","title":"进程内存","gridPos":{"x":18,"y":8,"w":6,"h":8},"datasource":{"type":"prometheus","uid":"prometheus"},"targets":[{"expr":"demo_process_resident_memory_bytes{job=\"$job\"}","legendFormat":"RSS"}],"fieldConfig":{"defaults":{"unit":"bytes","noValue":"无数据"}}}
+  ]
+}
+

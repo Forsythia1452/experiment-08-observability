@@ -1,0 +1,18 @@
+groups:
+  - name: demo-service
+    rules:
+      - alert: DemoServiceDown
+        expr: up{job="demo-app"} == 0
+        for: 1m
+        labels:
+          severity: warning
+        annotations:
+          summary: Demo service has been unreachable for one minute
+      - alert: DemoHighErrorRate
+        expr: sum(rate(http_requests_total{job="demo-app",status=~"5.."}[5m])) / clamp_min(sum(rate(http_requests_total{job="demo-app"}[5m])), 0.001) > 0.10
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: Five minute HTTP error rate is above ten percent
+
